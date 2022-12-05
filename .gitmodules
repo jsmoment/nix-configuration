@@ -1,0 +1,3 @@
+[submodule "nix-gaming"]
+	path = nix-gaming
+	url = https://github.com/fufexan/nix-gaming
