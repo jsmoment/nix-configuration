@@ -17,7 +17,7 @@ in
       ll = "ls -l --color";
       ls = "ls --color";
       hms = "home-manager switch";
-      update = "nix-channel --update; sudo nix-channel --update; sudo nixos-rebuild switch; home-manager switch";
+      update = "nix-channel --update; sudo nix-channel --update; sudo nixos-rebuild switch -I $HOME/.config/nixpkgs/nixosconf/configuration.nix; home-manager switch";
       nix-clean = "nix-collect-garbage -d; sudo nix-collect-garbage -d";
       nos = "sudo nixos-rebuild switch -I $HOME/.config/nixpkgs/nixosconf/configuration.nix";
       nixs = "nix search nixpkgs";
