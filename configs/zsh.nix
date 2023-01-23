@@ -17,9 +17,9 @@ in
       ll = "ls -l --color";
       ls = "ls --color";
       hms = "home-manager switch";
-      update = "nix-channel --update; sudo nix-channel --update; sudo nixos-rebuild switch -I $HOME/.config/nixpkgs/nixosconf/configuration.nix; home-manager switch";
+      update = "nix-channel --update; sudo nix-channel --update; sudo nixos-rebuild switch -I nixos-config=$HOME/.config/nixpkgs/nixosconf/configuration.nix; home-manager switch";
       nix-clean = "nix-collect-garbage -d; sudo nix-collect-garbage -d";
-      nos = "sudo nixos-rebuild switch -I $HOME/.config/nixpkgs/nixosconf/configuration.nix";
+      nos = "sudo nixos-rebuild switch -I nixos-config=$HOME/.config/nixpkgs/nixosconf/configuration.nix";
       nixs = "nix search nixpkgs";
       icat = "kitty +kitten icat";
       ssh = "kitty +kitten ssh";
@@ -28,7 +28,8 @@ in
     initExtraFirst = ''
       PATH=~/.local/bin:$PATH
       source ~/.zsh/catppuccin-zsh-syntax-highlighting.zsh
-    '';
+      source <(${pkgs.any-nix-shell}/bin/any-nix-shell zsh --info-right)
+        '';
     history = {
       size = 10000;
       path = "${config.xdg.dataHome}/zsh/history";

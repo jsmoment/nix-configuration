@@ -14,7 +14,6 @@ in
     /home/js/.config/nixpkgs/fonts.nix
     /home/js/.config/nixpkgs/nix-gaming/modules/pipewireLowLatency.nix
     /home/js/.config/nixpkgs/nixosconf/pci-passthrough.nix
-    /home/js/.config/nixpkgs/nixosconf/openvpn.nix
   ];
 
   # kernel commandline
@@ -105,7 +104,7 @@ in
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.js = {
     isNormalUser = true;
-    extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
+    extraGroups = [ "wheel" "adbusers" ]; # Enable ‘sudo’ for the user. and adb udev group
     packages = with pkgs; [ firefox kitty ];
   };
 
@@ -119,30 +118,14 @@ in
 
   environment.systemPackages = with pkgs; [
     wget
+    pinentry
     argyllcms
     nix-gaming.packages.x86_64-linux.wine-osu
     (nix-gaming.packages.x86_64-linux.osu-lazer-bin.override {
       pipewire_latency = "32/48000";
     })
   ];
-
-  nixpkgs.overlays = [
-    (self: super: {
-      discord = (super.discord.overrideAttrs (
-        old: rec {
-          src = builtins.fetchTarball https://discord.com/api/download/stable?platform=linux&format=tar.gz;
-        }
-      )).override {
-        nss = super.nss_latest;
-      };
-    })
-  ];
   
-  # nix-gaming cachix
-  nix.settings = {
-    substituters = [ "https://nix-gaming.cachix.org" ];
-    trusted-public-keys = [ "nix-gaming.cachix.org-1:nbjlureqMbRAxR1gJ/f3hxemL9svXaZF/Ees8vCUUs4=" ];
-  };
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
   # Enable zsh
@@ -182,30 +165,34 @@ in
     };
   };
   
-  # autorandr
-  services.autorandr = {
-    enable = true;
-    defaultTarget = "normal";
-  };
-
-  # run it automatically on startup
-  systemd.user.services.boot-autorandr = {
-    description = "Autorandr service";
+  # set refresh rate to 165 on startup
+  systemd.user.services.boot-xrandr = {
+    description = "Sets resolution and refresh rate";
     partOf = [ "graphical-session.target" ];
     wantedBy = [ "graphical-session.target" ];
     serviceConfig = {
-      ExecStart = "${pkgs.autorandr}/bin/autorandr -c";
+      ExecStart = "${pkgs.xorg.xrandr}/bin/xrandr --output DP-0 --mode '1920x1080' --rate 165";
       Type = "oneshot";
     };
   };
 
   # gnome-keyring
   services.gnome.gnome-keyring.enable = true;
+  
+  # adb 
+  programs.adb.enable = true;
+
+  # gnupg
+  programs.gnupg.agent.enable = true;
+  programs.gnupg.agent.pinentryFlavor = "gnome3";
 
   # start virtual machine without password
   security.sudo.extraRules = [ 
     { users = [ "js" ];
-      commands = [ { command = "/run/current-system/sw/bin/virsh start win10"; options = [ "NOPASSWD" ]; } ]; }
-    ];
+    commands = [ { command = "/run/current-system/sw/bin/virsh start win10"; options = [ "NOPASSWD" ]; } ]; }
+  ];
+  # skip sudoedit directory check
+  security.sudo.extraConfig = ''
+    Defaults  !sudoedit_checkdir'';
 }
 

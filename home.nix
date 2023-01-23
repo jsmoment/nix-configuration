@@ -36,6 +36,7 @@ let
     # games
     prismlauncher
     heroic
+    lunar-client
     lutris
     # wine
     winetricks
@@ -47,6 +48,10 @@ let
   globalAliases = {
     gc = "nix-collect-garbage";
     hms = "home-manager switch";
+  };
+
+  openasar = builtins.fetchurl {
+    url = "https://github.com/GooseMod/OpenAsar/releases/download/nightly/app.asar";
   };
 in
 
@@ -68,6 +73,10 @@ in
       discord = (super.discord.overrideAttrs (
         old: rec {
           src = builtins.fetchTarball https://discord.com/api/download/stable?platform=linux&format=tar.gz;
+          postInstall = old.postInstall + ''
+            rm $out/opt/Discord/resources/app.asar
+            cp ${openasar} $out/opt/Discord/resources/app.asar
+          '';
         }
       )).override {
         nss = super.nss_latest;
